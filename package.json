@@ -1,0 +1,24 @@
+{
+  "name": "homebridge-automation-chromecast",
+  "version": "0.0.1",
+  "description": "Expose Chromecast/Chromecast Audio devices in Homebridge to enable automations",
+  "license": "ISC",
+  "keywords": [
+    "homebridge-plugin"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/paolotremadio/homebridge-automation-chromecast.git"
+  },
+  "bugs": {
+    "url": "http://github.com/paolotremadio/homebridge-automation-chromecast/issues"
+  },
+  "engines": {
+    "node": ">=0.12.0",
+    "homebridge": ">=0.2.0"
+  },
+  "dependencies": {
+    "castv2-client": "^1.2.0",
+    "mdns": "^2.3.4"
+  }
+}
