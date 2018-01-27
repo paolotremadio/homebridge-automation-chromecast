@@ -13,7 +13,9 @@ Example config.json:
 
 ```
 
-This accessory will create a fake switch linked with the status of a Chromecast or Chromecast Audio device. When the switch is On, the Chromecast is receiving an audio/video stream. When the switch is Off, the Chromecast is paused/stopped.
+This accessory will create a fake switch linked with the status of a Chromecast or Chromecast Audio device.
+It will also create a fake Motion Sensor.
+When you stream some audio/video to the Chromecast / Chromecast Audio, the switch turns on and the Sensor detects movement. Stop the streaming will turn the switch off and the sensor will stop detecting movements.
 
 Turning On the switch will play the currently casted stream. Turning Off the switch will stop the stream.
 
@@ -23,5 +25,5 @@ This project as been largely inspired by the work of [@robertherber](https://bit
 
 # Example: Dim the lights when I stream some video to my Chromecast
 1. Create accessory
-2. Use the switch as a trigger for an automation, set a scene of your choice
-3. Start streaming to the Chromecast. The switch will turn On, triggering the scene
+2. Use the Motion Sensor as a trigger for an automation, set a scene of your choice upon start streaming (e.g. turn on the speakers)
+3. Start streaming to the Chromecast. The Motion Sensor will detect a movement, triggering the scene

@@ -9,7 +9,7 @@ module.exports = function (homebridge) {
   Service = homebridge.hap.Service;
   Characteristic = homebridge.hap.Characteristic;
 
-  homebridge.registerAccessory("homebridge-automation-chromecast", "AutomationChromecast", AutomationChromecast);
+  homebridge.registerAccessory('homebridge-automation-chromecast', 'AutomationChromecast', AutomationChromecast);
 };
 
 const mdnsSequence = [
@@ -21,8 +21,8 @@ const mdnsSequence = [
 class AutomationChromecast {
   constructor(log, config) {
     this.log = log;
-    this.name = config["name"];
-    this.chromecastDeviceName = config["chromecastDeviceName"];
+    this.name = config['name'];
+    this.chromecastDeviceName = config['chromecastDeviceName'];
 
 
     this.chromecastIp = null;
@@ -38,6 +38,12 @@ class AutomationChromecast {
       .getCharacteristic(Characteristic.On)
       .on('get', this.isCasting.bind(this))
       .on('set', this.setCasting.bind(this));
+
+    this.motionService = new Service.MotionSensor(`${this.name} Streaming`);
+
+    this.motionService
+      .getCharacteristic(Characteristic.MotionDetected)
+      .on('get', this.isCasting.bind(this));
 
     this.detectDevice();
   }
@@ -166,10 +172,11 @@ class AutomationChromecast {
     }
 
     this.switchService.setCharacteristic(Characteristic.On, this.isCastingStatus);
+    this.motionService.setCharacteristic(Characteristic.MotionDetected, this.isCastingStatus);
   }
 
   getServices() {
-    return [this.switchService];
+    return [this.switchService, this.motionService];
   }
 
   /**
@@ -188,6 +195,9 @@ class AutomationChromecast {
    * @param {function} callback
    */
   setCasting(on, callback) {
+    this.isCastingStatus = on;
+    this.motionService.setCharacteristic(Characteristic.MotionDetected, this.isCastingStatus);
+
     if (on && !this.isCastingStatus) {
       this.castingMedia.play(() => callback());
     } else if (!on && this.isCastingStatus) {
