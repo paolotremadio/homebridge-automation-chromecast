@@ -39,6 +39,24 @@ class AutomationChromecast {
       .on('get', this.isCasting.bind(this))
       .on('set', this.setCasting.bind(this));
 
+
+    this.deviceType = null;
+    this.deviceIp = null;
+    this.deviceId = null;
+
+    this.switchService
+      .addCharacteristic(CustomCharacteristics.DeviceType)
+      .on('get', (callback) => callback(null, this.deviceType));
+
+    this.switchService
+      .addCharacteristic(CustomCharacteristics.DeviceIp)
+      .on('get', (callback) => callback(null, this.deviceIp));
+
+    this.switchService
+      .addCharacteristic(CustomCharacteristics.DeviceId)
+      .on('get', (callback) => callback(null, this.deviceId));
+
+
     this.motionService = new Service.MotionSensor(`${this.name} Streaming`);
 
     this.motionService
@@ -62,20 +80,12 @@ class AutomationChromecast {
         const ipAddress = device.addresses[0];
         const port = device.port;
 
-        this.switchService
-          .addCharacteristic(CustomCharacteristics.DeviceType)
-          .on('get', (callback) => callback(null, txt.md || ''));
-
-        this.switchService
-          .addCharacteristic(CustomCharacteristics.DeviceIp)
-          .on('get', (callback) => callback(null, `${ipAddress}:${port}`));
-
-        this.switchService
-          .addCharacteristic(CustomCharacteristics.DeviceId)
-          .on('get', (callback) => callback(null, txt.id));
-
         this.chromecastIp = ipAddress;
         this.chromecastPort = port;
+
+        this.deviceType = txt.md || '';
+        this.deviceIp = `${ipAddress}:${port}`;
+        this.deviceId = txt.id;
 
         this.log(`Chromecast found on ${this.chromecastIp}. Connecting...`);
         browser.stop();
