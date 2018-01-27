@@ -111,17 +111,22 @@ class AutomationChromecast {
       .on('error', status => this.log(status));
 
     this.chromecastClient.connect(connectionDetails, () => {
-      this.log('Chromecast connection: connected');
+      if (this.chromecastClient.connection && this.chromecastClient.heartbeat && this.chromecastClient.receiver) {
+        this.log('Chromecast connection: connected');
 
-      this.chromecastClient.heartbeat
-        .on('timeout', () => this.log('Chromecast connection: timeout.'))
-        .on('pong', () => null);
+        this.chromecastClient.connection
+          .on('disconnect', () => this.log('Chromecast connection: disconnected.'));
 
-      this.chromecastClient.receiver
-        .on('status', this.processClientStatus.bind(this));
+        this.chromecastClient.heartbeat
+          .on('timeout', () => this.log('Chromecast connection: timeout.'))
+          .on('pong', () => null);
 
-      // Force to detect the current status in order to initialise processClientStatus() at boot
-      this.chromecastClient.getStatus((err, status) => this.processClientStatus(status));
+        this.chromecastClient.receiver
+          .on('status', this.processClientStatus.bind(this));
+
+        // Force to detect the current status in order to initialise processClientStatus() at boot
+        this.chromecastClient.getStatus((err, status) => this.processClientStatus(status));
+      }
     });
   }
 
