@@ -147,12 +147,16 @@ class AutomationChromecast {
         this.castingApplication.transportId = this.castingApplication.sessionId;
 
         this.chromecastClient.join(this.castingApplication, CastDefaultMediaReceiver, (_, media) => {
+          // console.log('New media');
           // Force to detect the current status in order to initialise processMediaStatus() at boot
           media.getStatus((err, status) => this.processMediaStatus(status));
           media.on('status', this.processMediaStatus.bind(this));
           this.castingMedia = media;
         });
       }
+    } else {
+      this.castingMedia = null;
+      // console.log('Reset media');
     }
 
     // Process "Stop casting" command
@@ -207,12 +211,22 @@ class AutomationChromecast {
    * @param {function} callback
    */
   setCasting(on, callback) {
+    const currentlyCasting = this.isCastingStatus;
     this.isCastingStatus = on;
     this.motionService.setCharacteristic(Characteristic.MotionDetected, this.isCastingStatus);
 
-    if (on && !this.isCastingStatus) {
+    // console.log('New status: ', on, 'Current status', currentlyCasting);
+
+    if (!this.castingMedia) {
+      callback();
+      return;
+    }
+
+    if (on && !currentlyCasting) {
+      // console.log('Turning on');
       this.castingMedia.play(() => callback());
-    } else if (!on && this.isCastingStatus) {
+    } else if (!on && currentlyCasting) {
+      // console.log('Turning off');
       this.castingMedia.stop(() => callback());
     }
   }
