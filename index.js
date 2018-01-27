@@ -113,9 +113,6 @@ class AutomationChromecast {
     this.chromecastClient.connect(connectionDetails, () => {
       this.log('Chromecast connection: connected');
 
-      this.chromecastClient.connection
-        .on('disconnect', () => this.log('Chromecast connection: disconnected.'));
-
       this.chromecastClient.heartbeat
         .on('timeout', () => this.log('Chromecast connection: timeout.'))
         .on('pong', () => null);
