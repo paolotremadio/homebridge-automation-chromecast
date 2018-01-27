@@ -199,16 +199,19 @@ class AutomationChromecast {
 
 
   setIsCasting(statusBool) {
-    if (statusBool) {
-      this.log('Chromecast is now playing');
-      this.isCastingStatus = true;
-    } else {
-      this.log('Chromecast is now stopped');
-      this.isCastingStatus = false;
-    }
+    // Update the internal state and log only if there's been a change of state
+    if (statusBool !== this.isCastingStatus) {
+      if (statusBool) {
+        this.log('Chromecast is now playing');
+        this.isCastingStatus = true;
+      } else {
+        this.log('Chromecast is now stopped');
+        this.isCastingStatus = false;
+      }
 
-    this.switchService.setCharacteristic(Characteristic.On, this.isCastingStatus);
-    this.motionService.setCharacteristic(Characteristic.MotionDetected, this.isCastingStatus);
+      this.switchService.setCharacteristic(Characteristic.On, this.isCastingStatus);
+      this.motionService.setCharacteristic(Characteristic.MotionDetected, this.isCastingStatus);
+    }
   }
 
   getServices() {
