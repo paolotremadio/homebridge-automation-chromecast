@@ -24,25 +24,13 @@ class AutomationChromecast {
     this.name = config['name'];
     this.chromecastDeviceName = config['chromecastDeviceName'];
 
-
-    this.chromecastIp = null;
-    this.chromecastPort = null;
-    this.chromecastClient = null;
-
-    this.isCastingStatus = false;
-    this.castingApplication = null;
-    this.castingMedia = null;
+    this.setDefaultProperties();
 
     this.switchService = new Service.Switch(this.name);
     this.switchService
       .getCharacteristic(Characteristic.On)
       .on('get', this.isCasting.bind(this))
       .on('set', this.setCasting.bind(this));
-
-
-    this.deviceType = null;
-    this.deviceIp = null;
-    this.deviceId = null;
 
     this.switchService
       .addCharacteristic(CustomCharacteristics.DeviceType)
@@ -64,6 +52,20 @@ class AutomationChromecast {
       .on('get', this.isCasting.bind(this));
 
     this.detectDevice();
+  }
+
+  setDefaultProperties() {
+    this.chromecastIp = null;
+    this.chromecastPort = null;
+    this.chromecastClient = null;
+
+    this.isCastingStatus = false;
+    this.castingApplication = null;
+    this.castingMedia = null;
+
+    this.deviceType = null;
+    this.deviceIp = null;
+    this.deviceId = null;
   }
 
   /**
@@ -98,6 +100,22 @@ class AutomationChromecast {
     browser.start();
   }
 
+  deviceTimeout() {
+    this.log('Chromecast connection: timeout');
+    if (this.chromecastClient && this.chromecastClient.connection) {
+      this.chromecastClient.connection.disconnect();
+      this.deviceDisconnected();
+    }
+  }
+
+  deviceDisconnected() {
+    this.log('Chromecast connection: disconnected');
+
+    this.setDefaultProperties();
+    this.setIsCasting(false);
+    this.detectDevice();
+  }
+
   initConnection() {
     this.chromecastClient = new CastClient();
 
@@ -108,6 +126,7 @@ class AutomationChromecast {
 
     this.chromecastClient
       .on('status', this.processClientStatus.bind(this))
+      .on('timeout', () => this.deviceTimeout())
       .on('error', status => this.log(status));
 
     this.chromecastClient.connect(connectionDetails, () => {
@@ -115,10 +134,11 @@ class AutomationChromecast {
         this.log('Chromecast connection: connected');
 
         this.chromecastClient.connection
-          .on('disconnect', () => this.log('Chromecast connection: disconnected.'));
+          .on('timeout', () => this.deviceTimeout())
+          .on('disconnect', () => this.deviceDisconnected());
 
         this.chromecastClient.heartbeat
-          .on('timeout', () => this.log('Chromecast connection: timeout.'))
+          .on('timeout', () => this.deviceTimeout())
           .on('pong', () => null);
 
         this.chromecastClient.receiver
@@ -161,7 +181,7 @@ class AutomationChromecast {
 
     // Process "Stop casting" command
     if (typeof status.applications === 'undefined') {
-      this.log('Stopped casting');
+      // console.log('Stopped casting');
       this.setIsCasting(false);
     }
   }
@@ -183,7 +203,7 @@ class AutomationChromecast {
       this.log('Chromecast is now playing');
       this.isCastingStatus = true;
     } else {
-      this.log('Chromecast has stopped');
+      this.log('Chromecast is now stopped');
       this.isCastingStatus = false;
     }
 
