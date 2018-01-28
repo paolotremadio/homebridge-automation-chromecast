@@ -79,6 +79,8 @@ class AutomationChromecast {
       const name = txt.fn;
 
       if (name.toLowerCase() === this.chromecastDeviceName.toLowerCase()) {
+        this.setDefaultProperties();
+
         const ipAddress = device.addresses[0];
         const port = device.port;
 
@@ -90,7 +92,6 @@ class AutomationChromecast {
         this.deviceId = txt.id;
 
         this.log(`Chromecast found on ${this.chromecastIp}. Connecting...`);
-        browser.stop();
 
         this.initConnection();
       }
@@ -111,9 +112,8 @@ class AutomationChromecast {
   deviceDisconnected() {
     this.log('Chromecast connection: disconnected');
 
-    this.setDefaultProperties();
     this.setIsCasting(false);
-    this.detectDevice();
+    this.setDefaultProperties();
   }
 
   initConnection() {
@@ -127,7 +127,7 @@ class AutomationChromecast {
     this.chromecastClient
       .on('status', this.processClientStatus.bind(this))
       .on('timeout', () => this.deviceTimeout())
-      .on('error', status => this.log(status));
+      .on('error', status => { this.log('Client error:'); this.log(status) });
 
     this.chromecastClient.connect(connectionDetails, () => {
       if (this.chromecastClient.connection && this.chromecastClient.heartbeat && this.chromecastClient.receiver) {

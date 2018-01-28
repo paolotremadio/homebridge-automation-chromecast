@@ -1,6 +1,6 @@
 {
   "name": "homebridge-automation-chromecast",
-  "version": "0.0.8",
+  "version": "0.0.9",
   "description": "Expose Chromecast/Chromecast Audio devices in Homebridge to enable automations",
   "license": "ISC",
   "keywords": [
