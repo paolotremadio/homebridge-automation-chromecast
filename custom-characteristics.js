@@ -1,4 +1,4 @@
-const Characteristic = require('hap-nodejs').Characteristic;
+const { Characteristic } = require('hap-nodejs');
 
 const DeviceTypeUUID = '2af07946-01da-11e8-ba89-0ed5f89f718b';
 const DeviceType = function () {
@@ -6,7 +6,7 @@ const DeviceType = function () {
 
   char.setProps({
     format: Characteristic.Formats.STRING,
-    perms: [Characteristic.Perms.READ]
+    perms: [Characteristic.Perms.READ],
   });
   char.value = char.getDefaultValue();
   return char;
@@ -20,7 +20,7 @@ const DeviceId = function () {
 
   char.setProps({
     format: Characteristic.Formats.STRING,
-    perms: [Characteristic.Perms.READ]
+    perms: [Characteristic.Perms.READ],
   });
   char.value = char.getDefaultValue();
   return char;
@@ -34,7 +34,7 @@ const DeviceIp = function () {
 
   char.setProps({
     format: Characteristic.Formats.STRING,
-    perms: [Characteristic.Perms.READ]
+    perms: [Characteristic.Perms.READ],
   });
   char.value = char.getDefaultValue();
   return char;

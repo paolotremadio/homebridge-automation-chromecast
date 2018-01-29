@@ -1,11 +1,14 @@
 {
   "name": "homebridge-automation-chromecast",
-  "version": "0.0.9",
+  "version": "0.0.10",
   "description": "Expose Chromecast/Chromecast Audio devices in Homebridge to enable automations",
   "license": "ISC",
   "keywords": [
     "homebridge-plugin"
   ],
+  "author": {
+    "name": "Paolo Tremadio"
+  },
   "repository": {
     "type": "git",
     "url": "git://github.com/paolotremadio/homebridge-automation-chromecast.git"
@@ -14,11 +17,20 @@
     "url": "http://github.com/paolotremadio/homebridge-automation-chromecast/issues"
   },
   "engines": {
-    "node": ">=0.12.0",
-    "homebridge": ">=0.2.0"
+    "node": ">=6.0.0",
+    "homebridge": ">=0.4.0"
   },
   "dependencies": {
     "castv2-client": "^1.2.0",
-    "mdns": "^2.3.4"
+    "hap-nodejs": "^0.4.28",
+    "mdns": "^2.3.3"
+  },
+  "devDependencies": {
+    "eslint": "^4.16.0",
+    "eslint-config-airbnb-base": "^12.1.0",
+    "eslint-plugin-import": "^2.8.0"
+  },
+  "scripts": {
+    "lint": "./node_modules/eslint/bin/eslint.js . --ext .js"
   }
 }

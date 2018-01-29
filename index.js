@@ -3,26 +3,20 @@ const CastClient = require('castv2-client').Client;
 const CastDefaultMediaReceiver = require('castv2-client').DefaultMediaReceiver;
 const CustomCharacteristics = require('./custom-characteristics');
 
-let Service, Characteristic;
-
-module.exports = function (homebridge) {
-  Service = homebridge.hap.Service;
-  Characteristic = homebridge.hap.Characteristic;
-
-  homebridge.registerAccessory('homebridge-automation-chromecast', 'AutomationChromecast', AutomationChromecast);
-};
+let Service;
+let Characteristic;
 
 const mdnsSequence = [
   mdns.rst.DNSServiceResolve(),
-  'DNSServiceGetAddrInfo' in mdns.dns_sd ? mdns.rst.DNSServiceGetAddrInfo() : mdns.rst.getaddrinfo({families: [0]}),
-  mdns.rst.makeAddressesUnique()
+  'DNSServiceGetAddrInfo' in mdns.dns_sd ? mdns.rst.DNSServiceGetAddrInfo() : mdns.rst.getaddrinfo({ families: [0] }),
+  mdns.rst.makeAddressesUnique(),
 ];
 
 class AutomationChromecast {
   constructor(log, config) {
     this.log = log;
-    this.name = config['name'];
-    this.chromecastDeviceName = config['chromecastDeviceName'];
+    this.name = config.name;
+    this.chromecastDeviceName = config.chromecastDeviceName;
 
     this.setDefaultProperties();
 
@@ -34,15 +28,15 @@ class AutomationChromecast {
 
     this.switchService
       .addCharacteristic(CustomCharacteristics.DeviceType)
-      .on('get', (callback) => callback(null, this.deviceType));
+      .on('get', callback => callback(null, this.deviceType));
 
     this.switchService
       .addCharacteristic(CustomCharacteristics.DeviceIp)
-      .on('get', (callback) => callback(null, this.deviceIp));
+      .on('get', callback => callback(null, this.deviceIp));
 
     this.switchService
       .addCharacteristic(CustomCharacteristics.DeviceId)
-      .on('get', (callback) => callback(null, this.deviceId));
+      .on('get', callback => callback(null, this.deviceId));
 
 
     this.motionService = new Service.MotionSensor(`${this.name} Streaming`);
@@ -72,9 +66,9 @@ class AutomationChromecast {
    * Use bonjour to detect Chromecast devices on the network
    */
   detectDevice() {
-    const browser = mdns.createBrowser(mdns.tcp('googlecast'), {resolverSequence: mdnsSequence});
+    const browser = mdns.createBrowser(mdns.tcp('googlecast'), { resolverSequence: mdnsSequence });
 
-    browser.on('serviceUp', device => {
+    browser.on('serviceUp', (device) => {
       const txt = device.txtRecord;
       const name = txt.fn;
 
@@ -82,7 +76,7 @@ class AutomationChromecast {
         this.setDefaultProperties();
 
         const ipAddress = device.addresses[0];
-        const port = device.port;
+        const { port } = device;
 
         this.chromecastIp = ipAddress;
         this.chromecastPort = port;
@@ -127,10 +121,17 @@ class AutomationChromecast {
     this.chromecastClient
       .on('status', this.processClientStatus.bind(this))
       .on('timeout', () => this.deviceTimeout())
-      .on('error', status => { this.log('Client error:'); this.log(status) });
+      .on('error', (status) => {
+        this.log('Client error:');
+        this.log(status);
+      });
 
     this.chromecastClient.connect(connectionDetails, () => {
-      if (this.chromecastClient.connection && this.chromecastClient.heartbeat && this.chromecastClient.receiver) {
+      if (
+        this.chromecastClient.connection &&
+        this.chromecastClient.heartbeat &&
+        this.chromecastClient.receiver
+      ) {
         this.log('Chromecast connection: connected');
 
         this.chromecastClient.connection
@@ -151,43 +152,56 @@ class AutomationChromecast {
   }
 
   processClientStatus(status) {
-    // console.log('CLIENT STATUS');
-    const applications = status.applications;
+    // this.log.debug('Received client status:');
+    // this.log.debug(status);
+
+    const { applications } = status;
     const currentApplication = applications && applications.length > 0 ? applications[0] : null;
 
     if (currentApplication) {
-      const lastMonitoredApplicationStatusId = this.castingApplication ? this.castingApplication.sessionId : null;
+      const lastMonitoredApplicationStatusId =
+        this.castingApplication ? this.castingApplication.sessionId : null;
 
       if (currentApplication.sessionId !== lastMonitoredApplicationStatusId) {
         this.castingApplication = currentApplication;
 
-        // NOTE: The castv2-client library has not been updated in a while. The current version of Chromecast protocol
-        // does NOT include transportId when streaming to a group of speakers. The transportId is often the sessionId.
-        // Assigning the transportId to the sessionId makes the library works with group of speakers in Chromecast Audio.
+        /*
+        NOTE: The castv2-client library has not been updated in a while.
+        The current version of Chromecast protocol may NOT include transportId when streaming
+        to a group of speakers. The transportId is same as the sessionId.
+        Assigning the transportId to the sessionId makes the library works with
+        group of speakers in Chromecast Audio.
+         */
         this.castingApplication.transportId = this.castingApplication.sessionId;
 
-        this.chromecastClient.join(this.castingApplication, CastDefaultMediaReceiver, (_, media) => {
-          // console.log('New media');
-          // Force to detect the current status in order to initialise processMediaStatus() at boot
-          media.getStatus((err, status) => this.processMediaStatus(status));
-          media.on('status', this.processMediaStatus.bind(this));
-          this.castingMedia = media;
-        });
+        this.chromecastClient.join(
+          this.castingApplication,
+          CastDefaultMediaReceiver,
+          (_, media) => {
+            // this.log('New media');
+            // Force to detect the current status in order to initialise at boot
+            media.getStatus((err, mediaStatus) => this.processMediaStatus(mediaStatus));
+            media.on('status', this.processMediaStatus.bind(this));
+            this.castingMedia = media;
+          },
+        );
       }
     } else {
       this.castingMedia = null;
-      // console.log('Reset media');
+      // this.log.debug('Reset media');
     }
 
     // Process "Stop casting" command
     if (typeof status.applications === 'undefined') {
-      // console.log('Stopped casting');
+      // this.log.debug('Stopped casting');
       this.setIsCasting(false);
     }
   }
 
   processMediaStatus(status) {
-    // console.log('MEDIA STATUS');
+    // this.log.debug('Received media status:');
+    // this.log.debug(status);
+
     if (status && status.playerState) {
       if (status.playerState === 'PLAYING' || status.playerState === 'BUFFERING') {
         this.setIsCasting(true);
@@ -238,7 +252,7 @@ class AutomationChromecast {
     this.isCastingStatus = on;
     this.motionService.setCharacteristic(Characteristic.MotionDetected, this.isCastingStatus);
 
-    // console.log('New status: ', on, 'Current status', currentlyCasting);
+    // this.log('New status: ', on, 'Current status', currentlyCasting);
 
     if (!this.castingMedia) {
       callback();
@@ -246,11 +260,18 @@ class AutomationChromecast {
     }
 
     if (on && !currentlyCasting) {
-      // console.log('Turning on');
+      // this.log('Turning on');
       this.castingMedia.play(() => callback());
     } else if (!on && currentlyCasting) {
-      // console.log('Turning off');
+      // this.log('Turning off');
       this.castingMedia.stop(() => callback());
     }
   }
 }
+
+module.exports = (homebridge) => {
+  Service = homebridge.hap.Service; // eslint-disable-line
+  Characteristic = homebridge.hap.Characteristic; // eslint-disable-line
+
+  homebridge.registerAccessory('homebridge-automation-chromecast', 'AutomationChromecast', AutomationChromecast);
+};
