@@ -174,17 +174,22 @@ class AutomationChromecast {
          */
         this.castingApplication.transportId = this.castingApplication.sessionId;
 
-        this.chromecastClient.join(
-          this.castingApplication,
-          CastDefaultMediaReceiver,
-          (_, media) => {
-            // this.log('New media');
-            // Force to detect the current status in order to initialise at boot
-            media.getStatus((err, mediaStatus) => this.processMediaStatus(mediaStatus));
-            media.on('status', this.processMediaStatus.bind(this));
-            this.castingMedia = media;
-          },
-        );
+        try {
+          this.chromecastClient.join(
+            this.castingApplication,
+            CastDefaultMediaReceiver,
+            (_, media) => {
+              // this.log('New media');
+              // Force to detect the current status in order to initialise at boot
+              media.getStatus((err, mediaStatus) => this.processMediaStatus(mediaStatus));
+              media.on('status', this.processMediaStatus.bind(this));
+              this.castingMedia = media;
+            },
+          );
+        } catch (e) {
+          this.deviceTimeout();
+          this.initConnection();
+        }
       }
     } else {
       this.castingMedia = null;
