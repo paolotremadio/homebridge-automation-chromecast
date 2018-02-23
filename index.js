@@ -17,6 +17,7 @@ class AutomationChromecast {
     this.log = log;
     this.name = config.name;
     this.chromecastDeviceName = config.chromecastDeviceName;
+    this.switchOffDelay = config.switchOffDelay || 0;
 
     this.setDefaultProperties();
 
@@ -60,6 +61,8 @@ class AutomationChromecast {
     this.deviceType = null;
     this.deviceIp = null;
     this.deviceId = null;
+
+    this.switchOffDelayTimer = null;
   }
 
   /**
@@ -229,7 +232,20 @@ class AutomationChromecast {
       }
 
       this.switchService.setCharacteristic(Characteristic.On, this.isCastingStatus);
-      this.motionService.setCharacteristic(Characteristic.MotionDetected, this.isCastingStatus);
+
+      const updateMotionSensor = () => {
+        this.motionService.setCharacteristic(Characteristic.MotionDetected, this.isCastingStatus);
+        this.log(`Motion sensor ${this.isCastingStatus ? 'is detecting movements' : 'stopped detecting movements'}`);
+      };
+
+      if (!this.isCastingStatus && this.switchOffDelay) {
+        this.switchOffDelayTimer = setTimeout(updateMotionSensor, this.switchOffDelay);
+      } else {
+        if (this.switchOffDelayTimer) {
+          clearTimeout(this.switchOffDelayTimer);
+        }
+        updateMotionSensor();
+      }
     }
   }
 
@@ -254,8 +270,7 @@ class AutomationChromecast {
    */
   setCasting(on, callback) {
     const currentlyCasting = this.isCastingStatus;
-    this.isCastingStatus = on;
-    this.motionService.setCharacteristic(Characteristic.MotionDetected, this.isCastingStatus);
+    this.setIsCasting(on);
 
     // this.log('New status: ', on, 'Current status', currentlyCasting);
 
