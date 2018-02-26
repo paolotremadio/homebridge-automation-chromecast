@@ -1,6 +1,7 @@
 const mdns = require('mdns');
 const CastClient = require('castv2-client').Client;
 const CastDefaultMediaReceiver = require('castv2-client').DefaultMediaReceiver;
+const debug = require('debug')('homebridge-automation-chromecast');
 const CustomCharacteristics = require('./custom-characteristics');
 
 let Service;
@@ -19,7 +20,7 @@ class AutomationChromecast {
     this.chromecastDeviceName = config.chromecastDeviceName;
     this.switchOffDelay = config.switchOffDelay || 0;
 
-    this.setDefaultProperties();
+    this.setDefaultProperties(true);
 
     this.switchService = new Service.Switch(this.name);
     this.switchService
@@ -46,12 +47,14 @@ class AutomationChromecast {
       .getCharacteristic(Characteristic.MotionDetected)
       .on('get', this.isCasting.bind(this));
 
-    this.detectDevice();
+    this.detectChromecast();
   }
 
-  setDefaultProperties() {
-    this.chromecastIp = null;
-    this.chromecastPort = null;
+  setDefaultProperties(resetIpAndPort = false) {
+    if (resetIpAndPort) {
+      this.chromecastIp = null;
+      this.chromecastPort = null;
+    }
     this.chromecastClient = null;
 
     this.isCastingStatus = false;
@@ -68,7 +71,7 @@ class AutomationChromecast {
   /**
    * Use bonjour to detect Chromecast devices on the network
    */
-  detectDevice() {
+  detectChromecast() {
     const browser = mdns.createBrowser(mdns.tcp('googlecast'), { resolverSequence: mdnsSequence });
 
     browser.on('serviceUp', (device) => {
@@ -76,7 +79,7 @@ class AutomationChromecast {
       const name = txt.fn;
 
       if (name.toLowerCase() === this.chromecastDeviceName.toLowerCase()) {
-        this.setDefaultProperties();
+        this.setDefaultProperties(true);
 
         const ipAddress = device.addresses[0];
         const { port } = device;
@@ -88,32 +91,39 @@ class AutomationChromecast {
         this.deviceIp = `${ipAddress}:${port}`;
         this.deviceId = txt.id;
 
-        this.log(`Chromecast found on ${this.chromecastIp}. Connecting...`);
+        this.log(`Chromecast found on ${this.chromecastIp}:${this.chromecastPort}`);
 
-        this.initConnection();
+        this.clientConnect();
       }
     });
 
-    this.log(`Scanning for Chromecast device with name "${this.chromecastDeviceName}"`);
+    this.log(`Searching for Chromecast device named "${this.chromecastDeviceName}"`);
     browser.start();
   }
 
-  deviceTimeout() {
-    this.log('Chromecast connection: timeout');
-    if (this.chromecastClient && this.chromecastClient.connection) {
-      this.chromecastClient.connection.disconnect();
-      this.deviceDisconnected();
-    }
+  clientError(error) {
+    this.log(`Chromecast client error - ${error}`);
+
+    this.clientDisconnect();
+
+    this.log('Waiting 2 seconds before reconnecting');
+    setTimeout(() => {
+      this.clientConnect();
+    }, 2000);
   }
 
-  deviceDisconnected() {
+  clientDisconnect() {
     this.log('Chromecast connection: disconnected');
+
+    if (this.chromecastClient) {
+      this.chromecastClient.close();
+    }
 
     this.setIsCasting(false);
     this.setDefaultProperties();
   }
 
-  initConnection() {
+  clientConnect() {
     this.chromecastClient = new CastClient();
 
     const connectionDetails = {
@@ -123,11 +133,10 @@ class AutomationChromecast {
 
     this.chromecastClient
       .on('status', this.processClientStatus.bind(this))
-      .on('timeout', () => this.deviceTimeout())
-      .on('error', (status) => {
-        this.log('Client error:');
-        this.log(status);
-      });
+      .on('timeout', () => debug('chromeCastClient - timeout'))
+      .on('error', status => this.clientError(status));
+
+    this.log(`Connecting to Chromecast on ${this.chromecastIp}:${this.chromecastPort}`);
 
     this.chromecastClient.connect(connectionDetails, () => {
       if (
@@ -138,11 +147,11 @@ class AutomationChromecast {
         this.log('Chromecast connection: connected');
 
         this.chromecastClient.connection
-          .on('timeout', () => this.deviceTimeout())
-          .on('disconnect', () => this.deviceDisconnected());
+          .on('timeout', () => debug('chromeCastClient.connection - timeout'))
+          .on('disconnect', () => this.clientDisconnect());
 
         this.chromecastClient.heartbeat
-          .on('timeout', () => this.deviceTimeout())
+          .on('timeout', () => debug('chromeCastClient.heartbeat - timeout'))
           .on('pong', () => null);
 
         this.chromecastClient.receiver
@@ -155,8 +164,7 @@ class AutomationChromecast {
   }
 
   processClientStatus(status) {
-    // this.log.debug('Received client status:');
-    // this.log.debug(status);
+    debug(`processClientStatus() - Received client status`, status);
 
     const { applications } = status;
     const currentApplication = applications && applications.length > 0 ? applications[0] : null;
@@ -182,7 +190,7 @@ class AutomationChromecast {
             this.castingApplication,
             CastDefaultMediaReceiver,
             (_, media) => {
-              // this.log('New media');
+              debug('processClientStatus() - New media');
               // Force to detect the current status in order to initialise at boot
               media.getStatus((err, mediaStatus) => this.processMediaStatus(mediaStatus));
               media.on('status', this.processMediaStatus.bind(this));
@@ -190,25 +198,25 @@ class AutomationChromecast {
             },
           );
         } catch (e) {
-          this.deviceTimeout();
-          this.initConnection();
+          debug(`processClientStatus() - Exception`, e);
+          this.clientDisconnect();
+          this.clientConnect();
         }
       }
     } else {
       this.castingMedia = null;
-      // this.log.debug('Reset media');
+      debug('processClientStatus() - Reset media');
     }
 
     // Process "Stop casting" command
     if (typeof status.applications === 'undefined') {
-      // this.log.debug('Stopped casting');
+      debug('processClientStatus() - Stopped casting');
       this.setIsCasting(false);
     }
   }
 
   processMediaStatus(status) {
-    // this.log.debug('Received media status:');
-    // this.log.debug(status);
+    debug('processMediaStatus() - Received media status', status);
 
     if (status && status.playerState) {
       if (status.playerState === 'PLAYING' || status.playerState === 'BUFFERING') {
@@ -218,7 +226,6 @@ class AutomationChromecast {
       }
     }
   }
-
 
   setIsCasting(statusBool) {
     // Update the internal state and log only if there's been a change of state
@@ -272,7 +279,7 @@ class AutomationChromecast {
     const currentlyCasting = this.isCastingStatus;
     this.setIsCasting(on);
 
-    // this.log('New status: ', on, 'Current status', currentlyCasting);
+    debug(`setCasting() - Current status: ${currentlyCasting} - New status: ${on}`);
 
     if (!this.castingMedia) {
       callback();
@@ -280,10 +287,10 @@ class AutomationChromecast {
     }
 
     if (on && !currentlyCasting) {
-      // this.log('Turning on');
+      debug('setCasting() - Play');
       this.castingMedia.play(() => callback());
     } else if (!on && currentlyCasting) {
-      // this.log('Turning off');
+      debug('setCasting() - Stop');
       this.castingMedia.stop(() => callback());
     }
   }
