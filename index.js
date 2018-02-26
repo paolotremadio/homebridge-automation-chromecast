@@ -164,7 +164,7 @@ class AutomationChromecast {
   }
 
   processClientStatus(status) {
-    debug(`processClientStatus() - Received client status`, status);
+    debug('processClientStatus() - Received client status', status);
 
     const { applications } = status;
     const currentApplication = applications && applications.length > 0 ? applications[0] : null;
@@ -198,7 +198,7 @@ class AutomationChromecast {
             },
           );
         } catch (e) {
-          debug(`processClientStatus() - Exception`, e);
+          debug('processClientStatus() - Exception', e);
           this.clientDisconnect();
           this.clientConnect();
         }
