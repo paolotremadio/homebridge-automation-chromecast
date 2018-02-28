@@ -1,7 +1,7 @@
 const mdns = require('mdns');
 const CastClient = require('castv2-client').Client;
 const CastDefaultMediaReceiver = require('castv2-client').DefaultMediaReceiver;
-const debug = require('debug')('homebridge-automation-chromecast');
+const debug = require('debug');
 const CustomCharacteristics = require('./custom-characteristics');
 
 let Service;
@@ -19,6 +19,7 @@ class AutomationChromecast {
     this.name = config.name;
     this.chromecastDeviceName = config.chromecastDeviceName;
     this.switchOffDelay = config.switchOffDelay || 0;
+    this.debug = debug(`homebridge-automation-chromecast:${this.chromecastDeviceName}`);
 
     this.setDefaultProperties(true);
 
@@ -138,7 +139,7 @@ class AutomationChromecast {
 
     this.chromecastClient
       .on('status', this.processClientStatus.bind(this))
-      .on('timeout', () => debug('chromeCastClient - timeout'))
+      .on('timeout', () => this.debug('chromeCastClient - timeout'))
       .on('error', status => this.clientError(status));
 
     this.log(`Connecting to Chromecast on ${this.chromecastIp}:${this.chromecastPort}`);
@@ -152,11 +153,11 @@ class AutomationChromecast {
         this.log('Chromecast connection: connected');
 
         this.chromecastClient.connection
-          .on('timeout', () => debug('chromeCastClient.connection - timeout'))
+          .on('timeout', () => this.debug('chromeCastClient.connection - timeout'))
           .on('disconnect', () => this.clientDisconnect(true));
 
         this.chromecastClient.heartbeat
-          .on('timeout', () => debug('chromeCastClient.heartbeat - timeout'))
+          .on('timeout', () => this.debug('chromeCastClient.heartbeat - timeout'))
           .on('pong', () => null);
 
         this.chromecastClient.receiver
@@ -169,7 +170,7 @@ class AutomationChromecast {
   }
 
   processClientStatus(status) {
-    debug('processClientStatus() - Received client status', status);
+    this.debug('processClientStatus() - Received client status', status);
 
     const { applications } = status;
     const currentApplication = applications && applications.length > 0 ? applications[0] : null;
@@ -195,7 +196,7 @@ class AutomationChromecast {
             this.castingApplication,
             CastDefaultMediaReceiver,
             (_, media) => {
-              debug('processClientStatus() - New media');
+              this.debug('processClientStatus() - New media');
               // Force to detect the current status in order to initialise at boot
               media.getStatus((err, mediaStatus) => this.processMediaStatus(mediaStatus));
               media.on('status', this.processMediaStatus.bind(this));
@@ -204,24 +205,24 @@ class AutomationChromecast {
           );
         } catch (e) {
           // Handle exceptions like "Cannot read property 'createChannel' of null"
-          debug('processClientStatus() - Exception', e);
+          this.debug('processClientStatus() - Exception', e);
           this.clientDisconnect(true);
         }
       }
     } else {
       this.castingMedia = null;
-      debug('processClientStatus() - Reset media');
+      this.debug('processClientStatus() - Reset media');
     }
 
     // Process "Stop casting" command
     if (typeof status.applications === 'undefined') {
-      debug('processClientStatus() - Stopped casting');
+      this.debug('processClientStatus() - Stopped casting');
       this.setIsCasting(false);
     }
   }
 
   processMediaStatus(status) {
-    debug('processMediaStatus() - Received media status', status);
+    this.debug('processMediaStatus() - Received media status', status);
 
     if (status && status.playerState) {
       if (status.playerState === 'PLAYING' || status.playerState === 'BUFFERING') {
@@ -284,7 +285,7 @@ class AutomationChromecast {
     const currentlyCasting = this.isCastingStatus;
     this.setIsCasting(on);
 
-    debug(`setCasting() - Current status: ${currentlyCasting} - New status: ${on}`);
+    this.debug(`setCasting() - Current status: ${currentlyCasting} - New status: ${on}`);
 
     if (!this.castingMedia) {
       callback();
@@ -292,10 +293,10 @@ class AutomationChromecast {
     }
 
     if (on && !currentlyCasting) {
-      debug('setCasting() - Play');
+      this.debug('setCasting() - Play');
       this.castingMedia.play(() => callback());
     } else if (!on && currentlyCasting) {
-      debug('setCasting() - Stop');
+      this.debug('setCasting() - Stop');
       this.castingMedia.stop(() => callback());
     }
   }
