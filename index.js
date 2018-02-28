@@ -104,23 +104,28 @@ class AutomationChromecast {
   clientError(error) {
     this.log(`Chromecast client error - ${error}`);
 
-    this.clientDisconnect();
-
-    this.log('Waiting 2 seconds before reconnecting');
-    setTimeout(() => {
-      this.clientConnect();
-    }, 2000);
+    this.clientDisconnect(true);
   }
 
-  clientDisconnect() {
+  clientDisconnect(reconnect) {
     this.log('Chromecast connection: disconnected');
 
     if (this.chromecastClient) {
-      this.chromecastClient.close();
+      try {
+        this.chromecastClient.close();
+      } catch (e){ // eslint-disable-line
+      }
     }
 
     this.setIsCasting(false);
     this.setDefaultProperties();
+
+    if (reconnect) {
+      this.log('Waiting 2 seconds before reconnecting');
+      setTimeout(() => {
+        this.clientConnect();
+      }, 2000);
+    }
   }
 
   clientConnect() {
@@ -148,7 +153,7 @@ class AutomationChromecast {
 
         this.chromecastClient.connection
           .on('timeout', () => debug('chromeCastClient.connection - timeout'))
-          .on('disconnect', () => this.clientDisconnect());
+          .on('disconnect', () => this.clientDisconnect(true));
 
         this.chromecastClient.heartbeat
           .on('timeout', () => debug('chromeCastClient.heartbeat - timeout'))
@@ -198,9 +203,9 @@ class AutomationChromecast {
             },
           );
         } catch (e) {
+          // Handle exceptions like "Cannot read property 'createChannel' of null"
           debug('processClientStatus() - Exception', e);
-          this.clientDisconnect();
-          this.clientConnect();
+          this.clientDisconnect(true);
         }
       }
     } else {
