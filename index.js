@@ -98,6 +98,14 @@ class AutomationChromecast {
       }
     });
 
+    // Restart browser every 30 minutes or so to make sure we are listening to announcements after hours running
+    setTimeout(() => {
+      browser.stop();
+
+      this.debug('detectChromecast() - Restarting mdns browser');
+      this.detectChromecast();
+    }, 30 * 60 * 1000);
+
     this.log(`Searching for Chromecast device named "${this.chromecastDeviceName}"`);
     browser.start();
   }
