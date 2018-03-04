@@ -154,6 +154,7 @@ class AutomationChromecast {
 
     this.chromecastClient.connect(connectionDetails, () => {
       if (
+        this.chromecastClient &&
         this.chromecastClient.connection &&
         this.chromecastClient.heartbeat &&
         this.chromecastClient.receiver
