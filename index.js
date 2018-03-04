@@ -102,6 +102,7 @@ class AutomationChromecast {
     setTimeout(() => {
       browser.stop();
 
+      this.clientDisconnect(false);
       this.debug('detectChromecast() - Restarting mdns browser');
       this.detectChromecast();
     }, 30 * 60 * 1000);
