@@ -56,7 +56,8 @@ class AutomationChromecast {
       this.chromecastIp = null;
       this.chromecastPort = null;
     }
-    this.chromecastClient = null;
+
+    this.resetClient();
 
     this.isCastingStatus = false;
     this.castingApplication = null;
@@ -117,15 +118,19 @@ class AutomationChromecast {
     this.clientDisconnect(true);
   }
 
-  clientDisconnect(reconnect) {
-    this.log('Chromecast connection: disconnected');
-
+  resetClient() {
     if (this.chromecastClient) {
       try {
         this.chromecastClient.close();
-      } catch (e){ // eslint-disable-line
+      } catch (e) { // eslint-disable-line
       }
+    } else {
+      this.chromecastClient = null;
     }
+  }
+
+  clientDisconnect(reconnect) {
+    this.log('Chromecast connection: disconnected');
 
     this.setIsCasting(false);
     this.setDefaultProperties();
