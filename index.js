@@ -51,7 +51,7 @@ class AutomationChromecast {
     this.detectChromecast();
   }
 
-  setDefaultProperties(resetIpAndPort = false) {
+  setDefaultProperties(resetIpAndPort = false, stopReconnecting = false) {
     if (resetIpAndPort) {
       this.chromecastIp = null;
       this.chromecastPort = null;
@@ -68,6 +68,17 @@ class AutomationChromecast {
     this.deviceId = null;
 
     this.switchOffDelayTimer = null;
+
+    if (stopReconnecting) {
+      if (this.reconnectTimer) {
+        clearTimeout(this.reconnectTimer);
+      }
+    }
+    this.reconnectTimer = null;
+
+    if (!this.reconnectCounter) {
+      this.reconnectCounter = 0;
+    }
   }
 
   /**
@@ -81,7 +92,7 @@ class AutomationChromecast {
       const name = txt.fn;
 
       if (name.toLowerCase() === this.chromecastDeviceName.toLowerCase()) {
-        this.setDefaultProperties(true);
+        this.setDefaultProperties(true, true);
 
         const ipAddress = device.addresses[0];
         const { port } = device;
@@ -133,11 +144,19 @@ class AutomationChromecast {
     this.log('Chromecast connection: disconnected');
 
     this.setIsCasting(false);
-    this.setDefaultProperties();
+    this.setDefaultProperties(false, true);
 
     if (reconnect) {
+      if (this.reconnectCounter > 150) { // Backoff after 5 minutes
+        this.log('Chromecast reconnection: backoff, searching again for Chromecast');
+        this.detectChromecast();
+        return;
+      }
+
       this.log('Waiting 2 seconds before reconnecting');
-      setTimeout(() => {
+
+      this.reconnectTimer = setTimeout(() => {
+        ++this.reconnectCounter;
         this.clientConnect();
       }, 2000);
     }
@@ -165,6 +184,7 @@ class AutomationChromecast {
         this.chromecastClient.heartbeat &&
         this.chromecastClient.receiver
       ) {
+        this.reconnectCounter = 0;
         this.log('Chromecast connection: connected');
 
         this.chromecastClient.connection
