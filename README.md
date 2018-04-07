@@ -40,17 +40,19 @@ Note: some properties are not compatible with iOS Home app, use [Elgato Eve app]
 |-----------|----------|-------|---------|
 | name | Yes | A unique name for the accessory. It will be used as the accessory name in HomeKit. | `Living Room TV` |
 | chromecastDeviceName | Yes | The name of your Chromecast device as shown in your Google Home App (case insensitive). This plugin will use Bonjour/mdns to detect the IP address of the Chromecast based on this name. | `Living Room` |
-| switchOffDelay | No (default: `0`) | The number of milliseconds to wait before the motion sensor stops detecting movement after stop casting audio. By default it is set to zero: as soon as you stop playing, the motion sensor will switch off. If you want to add a delay, set it to a value greater than zero. This config is useful for automations (see later example on this readme) | `5000` (milliseconds, equal to 5 seconds) |
+| switchOffDelay | No (default: `0`) | The number of milliseconds to wait before the motion sensor stops detecting movement after stop casting. By default it is set to zero: as soon as you stop playing, the motion sensor will switch off. If you want to add a delay, set it to a value greater than zero. This config is useful for automations (see later example on this readme). | `5000` (milliseconds, equal to 5 seconds) |
 
 ## Credits
 This project as been largely inspired by the work of [@robertherber](https://bitbucket.org/robertherber/homebridge-chromecast/src)  
-  
+
+
 # Examples
 ## Dim the lights when I stream some video to my Chromecast  
 1. Create an accessory in Homebridge (code example at the top of this readme)  
 2. Create a new automation in iOS Home/HomeKit: when the Motion Sensor detects movement, trigger a scene of your choice (e.g. "Movie lights")  
 3. Start streaming to the Chromecast. The Motion Sensor will detect a movement, triggering the scene  
-  
+
+
 ## Turn on/off the speakers when I streaming music
 Let's assume you have some powered speakers that need to be turned on before use (I have for example the [Yamaha HS8](https://usa.yamaha.com/products/proaudio/speakers/hs_series/index.html)). 
 
