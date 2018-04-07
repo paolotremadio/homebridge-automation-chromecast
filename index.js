@@ -41,6 +41,10 @@ class AutomationChromecast {
       .addCharacteristic(CustomCharacteristics.DeviceId)
       .on('get', callback => callback(null, this.deviceId));
 
+    this.switchService
+      .addCharacteristic(Characteristic.Volume)
+      .on('get', callback => callback(null, Math.floor(this.volume * 100)))
+      .on('set', this.setVolume.bind(this));
 
     this.motionService = new Service.MotionSensor(`${this.name} Streaming`);
 
@@ -62,6 +66,7 @@ class AutomationChromecast {
     this.isCastingStatus = false;
     this.castingApplication = null;
     this.castingMedia = null;
+    this.volume = 0;
 
     this.deviceType = null;
     this.deviceIp = null;
@@ -110,7 +115,7 @@ class AutomationChromecast {
       }
     });
 
-    // Restart browser every 30 minutes or so to make sure we are listening to announcements after hours running
+    // Restart browser every 30 minutes or so to make sure we are listening to announcements
     setTimeout(() => {
       browser.stop();
 
@@ -156,7 +161,7 @@ class AutomationChromecast {
       this.log('Waiting 2 seconds before reconnecting');
 
       this.reconnectTimer = setTimeout(() => {
-        ++this.reconnectCounter;
+        this.reconnectCounter = this.reconnectCounter + 1;
         this.clientConnect();
       }, 2000);
     }
@@ -254,6 +259,11 @@ class AutomationChromecast {
       this.debug('processClientStatus() - Stopped casting');
       this.setIsCasting(false);
     }
+
+    // Process volume
+    if (status.volume && 'level' in status.volume) {
+      this.volume = status.volume.level;
+    }
   }
 
   processMediaStatus(status) {
@@ -308,6 +318,22 @@ class AutomationChromecast {
    */
   isCasting(callback) {
     callback(null, this.isCastingStatus);
+  }
+
+  /**
+   * Set the Chromecast volume
+   *
+   * @param {int} volume
+   * @param {function} callback
+   */
+  setVolume(volume, callback) {
+    const currentValue = this.volume;
+
+    this.debug(`setVolume() - Current status: ${currentValue} - New status: ${volume}`);
+
+    if (this.chromecastClient) {
+      this.chromecastClient.setVolume({ level: volume / 100 }, () => callback());
+    }
   }
 
   /**
