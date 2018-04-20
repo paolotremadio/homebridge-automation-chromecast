@@ -332,7 +332,12 @@ class AutomationChromecast {
     this.debug(`setVolume() - Current status: ${currentValue} - New status: ${volume}`);
 
     if (this.chromecastClient) {
-      this.chromecastClient.setVolume({ level: volume / 100 }, () => callback());
+      try {
+        this.chromecastClient.setVolume({ level: volume / 100 }, () => callback());
+      } catch(e) {
+        this.debug(`setVolume() - Reported error`, e);
+        callback();
+      }
     }
   }
 
