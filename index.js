@@ -2,6 +2,8 @@ const mdns = require('mdns');
 const CastClient = require('castv2-client').Client;
 const CastDefaultMediaReceiver = require('castv2-client').DefaultMediaReceiver;
 const debug = require('debug');
+
+const pkginfo = require('./package');
 const CustomCharacteristics = require('./custom-characteristics');
 
 let Service;
@@ -51,6 +53,16 @@ class AutomationChromecast {
     this.motionService
       .getCharacteristic(Characteristic.MotionDetected)
       .on('get', this.isCasting.bind(this));
+
+    this.accessoryInformationService = new Service.AccessoryInformation();
+
+    this.accessoryInformationService
+      .setCharacteristic(Characteristic.Name, this.name)
+      .setCharacteristic(Characteristic.Manufacturer, pkginfo.author.name || pkginfo.author)
+      .setCharacteristic(Characteristic.Model, pkginfo.name)
+      .setCharacteristic(Characteristic.SerialNumber, 'n/a')
+      .setCharacteristic(Characteristic.FirmwareRevision, pkginfo.version)
+      .setCharacteristic(Characteristic.HardwareRevision, pkginfo.version);
 
     this.detectChromecast();
   }
@@ -308,7 +320,11 @@ class AutomationChromecast {
   }
 
   getServices() {
-    return [this.switchService, this.motionService];
+    return [
+      this.switchService,
+      this.motionService,
+      this.accessoryInformationService,
+    ];
   }
 
   /**
