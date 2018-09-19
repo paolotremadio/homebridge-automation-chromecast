@@ -376,11 +376,12 @@ class AutomationChromecast {
 
     if (on && !currentlyCasting) {
       this.debug('setCasting() - Play');
-      this.castingMedia.play(() => callback());
+      this.castingMedia.play(() => null);
     } else if (!on && currentlyCasting) {
       this.debug('setCasting() - Stop');
-      this.castingMedia.stop(() => callback());
+      this.castingMedia.stop(() => null);
     }
+    callback();
   }
 }
 
