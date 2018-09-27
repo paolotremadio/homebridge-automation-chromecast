@@ -69,6 +69,11 @@ Here's how:
   
 Using a delay will prevent the speakers from switching on and off constantly when you momentarily stop/start a stream (to avoid damages to the speakers)
 
+## Other examples
+- Mute your Chromecast Audios when playing something from your Chromecast Video
+- Pause your Chromecast when leaving home
+- 
+
 # Other useful plugins
 Do you want to play some audio/video on demand from your automation? 
 
