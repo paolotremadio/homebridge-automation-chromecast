@@ -1,20 +1,15 @@
 {
-  "name": "homebridge-automation-chromecast",
-  "version": "1.0.3",
-  "description": "Expose Chromecast/Chromecast Audio devices in Homebridge to enable automations",
+  "name": "homebridge-control-chromecast",
+  "version": "1.0.0",
+  "description": "Expose Chromecast/Chromecast Audio devices in Homebridge to control them",
   "license": "ISC",
   "keywords": [
     "homebridge-plugin"
   ],
-  "author": {
-    "name": "Paolo Tremadio"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/paolotremadio/homebridge-automation-chromecast.git"
-  },
+  "author": "Yotam Tal",
+  "repository": "git+https://github.com/yotamtal/homebridge-control-chromecast.git",
   "bugs": {
-    "url": "http://github.com/paolotremadio/homebridge-automation-chromecast/issues"
+    "url": "https://github.com/yotamtal/homebridge-control-chromecast"
   },
   "engines": {
     "node": ">=8.0.0",
@@ -23,7 +18,9 @@
   "dependencies": {
     "castv2-client": "^1.2.0",
     "debug": "^3.1.0",
+    "global": "^4.3.2",
     "hap-nodejs": "^0.4.28",
+    "homebridge-control-chromecast": "^1.0.0",
     "mdns": "^2.3.3"
   },
   "devDependencies": {
@@ -33,5 +30,7 @@
   },
   "scripts": {
     "lint": "./node_modules/eslint/bin/eslint.js . --ext .js"
-  }
+  },
+  "homepage": "https://github.com/yotamtal/homebridge-control-chromecast#readme",
+  "main": "index.js"
 }
