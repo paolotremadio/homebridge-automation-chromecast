@@ -36,25 +36,27 @@ const getCircularReplacer = () => {
 
 function ControlChromecastPlatform(log, config, api) {
 
-  this.config = config;
+  if(config){
+    this.config = config;
 
-  if (this.config && this.config.ignoredDevices && this.config.ignoredDevices.constructor !== Array)
-      delete this.config.ignoredDevices;
+    if (this.config && this.config.ignoredDevices && this.config.ignoredDevices.constructor !== Array)
+        delete this.config.ignoredDevices;
 
-  this.CastScanner = mdns.createBrowser(mdns.tcp('googlecast'), { resolverSequence: mdnsSequence });
-  
-  if(this.config)
-    this.ignoredDevices = this.config.ignoredDevices || [];
+    this.CastScanner = mdns.createBrowser(mdns.tcp('googlecast'), { resolverSequence: mdnsSequence });
 
-  /** homebridge api methods **/
-  this.api = api; 
-  /** platform accessories **/
-  this.accessories = {};
-  this.log = log;
+    if(this.config)
+      this.ignoredDevices = this.config.ignoredDevices || [];
 
-  this.api.on('didFinishLaunching', function() {
-    this.scanAccesories()
-  }.bind(this));
+    /** homebridge api methods **/
+    this.api = api; 
+    /** platform accessories **/
+    this.accessories = {};
+    this.log = log;
+
+    this.api.on('didFinishLaunching', function() {
+      this.scanAccesories()
+    }.bind(this));
+  }
 }
 
 ControlChromecastPlatform.prototype.scanAccesories = function () {
