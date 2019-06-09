@@ -38,11 +38,12 @@ function ControlChromecastPlatform(log, config, api) {
 
   this.config = config;
 
-  if (this.config.ignoredDevices && this.config.ignoredDevices.constructor !== Array)
+  if (this.config && this.config.ignoredDevices && this.config.ignoredDevices.constructor !== Array)
       delete this.config.ignoredDevices;
 
   this.CastScanner = mdns.createBrowser(mdns.tcp('googlecast'), { resolverSequence: mdnsSequence });
-  this.ignoredDevices = this.config.ignoredDevices || [];
+  if(this.config)
+    this.ignoredDevices = this.config.ignoredDevices || [];
 
   /** homebridge api methods **/
   this.api = api; 
