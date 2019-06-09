@@ -1,6 +1,6 @@
 {
   "name": "homebridge-control-chromecast",
-  "version": "1.0.1",
+  "version": "1.1.0",
   "description": "Expose Chromecast/Chromecast Audio devices in Homebridge to control them",
   "license": "ISC",
   "keywords": [
@@ -17,7 +17,7 @@
   },
   "dependencies": {
     "castv2-client": "^1.2.0",
-    "debug": "^3.1.0",
+    "debug": "^3.2.6",
     "global": "^4.3.2",
     "hap-nodejs": "^0.4.28",
     "homebridge-control-chromecast": "^1.0.0",
