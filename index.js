@@ -42,6 +42,7 @@ function ControlChromecastPlatform(log, config, api) {
       delete this.config.ignoredDevices;
 
   this.CastScanner = mdns.createBrowser(mdns.tcp('googlecast'), { resolverSequence: mdnsSequence });
+  
   if(this.config)
     this.ignoredDevices = this.config.ignoredDevices || [];
 
@@ -62,7 +63,7 @@ ControlChromecastPlatform.prototype.scanAccesories = function () {
     let uuid = UUIDGen.generate(device.txtRecord.id);
     let accessory = this.accessories[uuid];
 
-    if (this.ignoredDevices.indexOf(device.txtRecord.fn) !== -1) {
+    if (this.ignoredDevices && this.ignoredDevices.indexOf(device.txtRecord.fn) !== -1) {
       this.log('Ignoring: %s [%s]', device.txtRecord.fn, device.txtRecord.id)
       if (accessory !== undefined)  
         this.removeAccessory(accessory);
@@ -397,7 +398,7 @@ ControlChromecastPlatform.prototype.configurationRequestHandler = function (cont
         'interface': 'list',
         'title': 'Modify Ignored Devices',
         'allowMultipleSelection': false,
-        'items': this.ignoredDevices.length > 0 ? ['Add Accessory', 'Remove Accessory'] : ['Add Accessory']
+        'items': (this.ignoredDevices && this.ignoredDevices.length > 0) ? ['Add Accessory', 'Remove Accessory'] : ['Add Accessory']
       };
 
       context.onScreen = 'IgnoreList';
@@ -435,7 +436,7 @@ ControlChromecastPlatform.prototype.configurationRequestHandler = function (cont
         for (var i in request.response.selections.sort()) {
           let accessory = context.sortedAccessories[request.response.selections[i]];
 
-          if (accessory.context && accessory.context.id && this.ignoredDevices.indexOf(accessory.context.id) == -1) {
+          if (accessory.context && accessory.context.id && this.ignoredDevices && this.ignoredDevices.indexOf(accessory.context.id) == -1) {
             this.ignoredDevices.push(accessory.context.id);
           }
 
@@ -469,7 +470,7 @@ ControlChromecastPlatform.prototype.configurationRequestHandler = function (cont
 
       this.config.ignoredDevices = this.ignoredDevices;
 
-      if (this.config.ignoredDevices.length === 0) {
+      if (this.config && this.config.ignoredDevices.length === 0) {
         delete this.config.ignoredDevices;
       }
 
