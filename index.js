@@ -115,11 +115,6 @@ ControlChromecastPlatform.prototype.addAccessory = function (device) {
 
     let accessory = new PlatformAccessory(device.name, UUIDGen.generate(device.txtRecord.id));
 
-    accessory.on('identify', function(paired, callback) {
-      this.log(accessory.displayName, "Identify!!!");
-      callback();
-    }).bind(this);
-
     accessory.context.name = device.txtRecord.fn;
     accessory.context.make = "Google";
     accessory.context.model = device.txtRecord.md || "Unknown";
