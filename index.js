@@ -1,12 +1,10 @@
 const mdns = require('mdns');
 const CastClient = require('castv2-client').Client;
 const CastDefaultMediaReceiver = require('castv2-client').DefaultMediaReceiver;
-const debug = require('debug');
-
 const pkginfo = require('./package');
 const CustomCharacteristics = require('./custom-characteristics');
 
-let Service, Characteristic, PlatformAccessory, UUIDGen, CastScanner;
+let Service, Characteristic, PlatformAccessory, UUIDGen;
 
 const mdnsSequence = [
   mdns.rst.DNSServiceResolve(),
@@ -898,9 +896,6 @@ ChromecastAccessory.prototype.addEventHandler = function (service, characteristi
 ChromecastAccessory.prototype.addEventHandlers = function () {
   this.addEventHandler(Service.Lightbulb, Characteristic.On);
   this.addEventHandler(Service.Lightbulb,Characteristic.Brightness);
-  // this.addEventHandler(Service.Lightbulb,CustomCharacteristics.DeviceType);
-  // this.addEventHandler(Service.Lightbulb,CustomCharacteristics.DeviceIp);
-  // this.addEventHandler(Service.Lightbulb,CustomCharacteristics.DeviceId);
 
   this.accessoryInformationService = new Service.AccessoryInformation();
   this.accessoryInformationService
