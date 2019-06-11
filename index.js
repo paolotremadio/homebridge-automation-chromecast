@@ -91,12 +91,10 @@ ControlChromecastPlatform.prototype.scanAccesories = function () {
   }.bind(this));
 
   this.CastScanner.on('error', function(err, device) {
-    this.log('/*** DEVICE ERROR ****/')
+    // this.log('/*** DEVICE ERROR ****/')
     // console.log(JSON.stringify(device, getCircularReplacer()))
     // console.log(JSON.stringify(err, getCircularReplacer()))
-
-    if(JSON.stringify(err, getCircularReplacer()) === "{}")
-      addChromecast(device);
+    // if(JSON.stringify(err, getCircularReplacer()) === "{}") addChromecast(device);
   }.bind(this));
 
   // Restart browser every 30 minutes or so to make sure we are listening to announcements
