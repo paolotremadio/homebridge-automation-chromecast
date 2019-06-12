@@ -73,8 +73,13 @@ ControlChromecastPlatform.prototype.scanAccesories = function () {
       this.log('Adding a new found Chomecast: %s [%s]', device.txtRecord.fn, device.txtRecord.id)
       this.addAccessory(device);
     } else {
-      this.log("Discovered: %s [%s]", device.txtRecord.fn, device.txtRecord.id);
-      this.accessories[uuid] = new ChromecastAccessory(this.log, accessory, device);
+      if (accessory !== undefined) {
+        this.log("Discovered: %s [%s]", device.txtRecord.fn, device.txtRecord.id);
+        this.accessories[uuid] = new ChromecastAccessory(this.log, accessory, device);
+      } else {
+        this.log('Adding a new found Chomecast: %s [%s]', device.txtRecord.fn, device.txtRecord.id)
+        this.addAccessory(device);
+      }
     }
   }.bind(this);
 
@@ -522,7 +527,6 @@ function ChromecastAccessory(log, accessory, device) {
   this.log(`Controlling chromecast on ${this.chromecastIp}:${this.chromecastPort}`);
 
   this.clientConnect();
-
 
   this.power = 0;
   this.volume = 0;
