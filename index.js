@@ -60,25 +60,26 @@ function ControlChromecastPlatform(log, config, api) {
 ControlChromecastPlatform.prototype.scanAccesories = function () {
 
   let addChromecast = function(device){
-    let uuid = UUIDGen.generate(device.txtRecord.id);
-    let accessory = this.accessories[uuid];
-
-    if (this.ignoredDevices && this.ignoredDevices.indexOf(device.txtRecord.fn) !== -1) {
-      this.log('Ignoring: %s [%s]', device.txtRecord.fn, device.txtRecord.id)
-      if (accessory !== undefined)  
-        this.removeAccessory(accessory);
-    
-      return;
-    } else if (accessory === undefined) {
-      this.log('Adding a new found Chomecast: %s [%s]', device.txtRecord.fn, device.txtRecord.id)
-      this.addAccessory(device);
-    } else {
-      if (accessory !== undefined) {
-        this.log("Discovered: %s [%s]", device.txtRecord.fn, device.txtRecord.id);
-        this.accessories[uuid] = new ChromecastAccessory(this.log, accessory, device);
-      } else {
+    if(device && device.txtRecord && ['Chromecast', 'Chromecast Audio'].indexOf(device.txtRecord.md) !== -1){
+      let uuid = UUIDGen.generate(device.txtRecord.id);
+      let accessory = this.accessories[uuid];
+      if (this.ignoredDevices && this.ignoredDevices.indexOf(device.txtRecord.fn) !== -1) {
+        this.log('Ignoring: %s [%s]', device.txtRecord.fn, device.txtRecord.id)
+        if (accessory !== undefined)  
+          this.removeAccessory(accessory);
+      
+        return;
+      } else if (accessory === undefined) {
         this.log('Adding a new found Chomecast: %s [%s]', device.txtRecord.fn, device.txtRecord.id)
         this.addAccessory(device);
+      } else {
+        if (accessory !== undefined) {
+          this.log("Discovered: %s [%s]", device.txtRecord.fn, device.txtRecord.id);
+          this.accessories[uuid] = new ChromecastAccessory(this.log, accessory, device);
+        } else {
+          this.log('Adding a new found Chomecast: %s [%s]', device.txtRecord.fn, device.txtRecord.id)
+          this.addAccessory(device);
+        }
       }
     }
   }.bind(this);
@@ -86,7 +87,7 @@ ControlChromecastPlatform.prototype.scanAccesories = function () {
   this.CastScanner.on('serviceUp', addChromecast);
 
   this.CastScanner.on('serviceDown', function(device) {
-    this.log('/*** DEVICE DOWN ****/')
+    // this.log('/*** DEVICE DOWN ****/')
     // this.log(JSON.stringify(device, getCircularReplacer()))
   }.bind(this));
 
