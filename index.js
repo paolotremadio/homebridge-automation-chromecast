@@ -75,12 +75,7 @@ ControlChromecastPlatform.prototype.scanAccesories = function () {
       } else {
         if (accessory !== undefined && accessory.context) {
           this.log("Discovered: %s [%s]", device.txtRecord.fn, device.txtRecord.id);
-          if(this.accessories[uuid] instanceof PlatformAccessory){
-
-            this.accessories[uuid].updateInfo(device);
-            this.accessories[uuid].clientConnect();
-
-          } else this.accessories[uuid] = new ChromecastAccessory(this.log, accessory, device);
+          this.accessories[uuid] = new ChromecastAccessory(this.log, accessory, device);
         } else {
           this.log('Adding a new found Chomecast: %s [%s]', device.txtRecord.fn, device.txtRecord.id)
           this.addAccessory(device);
