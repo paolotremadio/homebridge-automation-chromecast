@@ -75,7 +75,12 @@ ControlChromecastPlatform.prototype.scanAccesories = function () {
       } else {
         if (accessory !== undefined && accessory.context) {
           this.log("Discovered: %s [%s]", device.txtRecord.fn, device.txtRecord.id);
-          this.accessories[uuid] = new ChromecastAccessory(this.log, accessory, device);
+          if(this.accessories[uuid] instanceof PlatformAccessory){
+
+            this.accessories[uuid].updateInfo(device);
+            this.accessories[uuid].clientConnect();
+
+          } else this.accessories[uuid] = new ChromecastAccessory(this.log, accessory, device);
         } else {
           this.log('Adding a new found Chomecast: %s [%s]', device.txtRecord.fn, device.txtRecord.id)
           this.addAccessory(device);
@@ -516,15 +521,7 @@ function ChromecastAccessory(log, accessory, device) {
 
   this.setDefaultProperties(true);
 
-  const ipAddress = device.addresses[0];
-  const { port } = device;
-
-  this.chromecastIp = ipAddress;
-  this.chromecastPort = port;
-
-  this.deviceType = device.txtRecord.md || '';
-  this.deviceIp = `${ipAddress}:${port}`;
-  this.deviceId = device.txtRecord.id;
+  this.updateInfo(device);
 
   this.log(`Controlling chromecast on ${this.chromecastIp}:${this.chromecastPort}`);
 
@@ -810,13 +807,22 @@ ChromecastAccessory.prototype.setPower = function(state, callback) {
 }
 
 
-ChromecastAccessory.prototype.updateInfo = function () {
+ChromecastAccessory.prototype.updateInfo = function (device) {
   this.log('Updating chromecast info');
+  let ip_address = device.addresses[0];
+  let { port } = device;
+
+  this.chromecastIp = ip_address;
+  this.chromecastPort = port;
+
+  this.deviceType = device.txtRecord.md || '';
+  this.deviceIp = `${ip_address}:${port}`;
+  this.deviceId = device.txtRecord.id;
 };
 
 ChromecastAccessory.prototype.updateReachability = function (device) {
   this.device = device;
-  this.updateInfo();
+  this.updateInfo(device);
 };
 
 ChromecastAccessory.prototype.setDefaultProperties = function (resetIpAndPort = false, stopReconnecting = false) {
