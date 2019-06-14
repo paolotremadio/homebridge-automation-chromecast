@@ -63,6 +63,7 @@ ControlChromecastPlatform.prototype.scanAccesories = function () {
     if(device && device.txtRecord && ['Chromecast', 'Chromecast Audio'].indexOf(device.txtRecord.md) !== -1){
       let uuid = UUIDGen.generate(device.txtRecord.id);
       let accessory = this.accessories[uuid];
+
       if (this.ignoredDevices && this.ignoredDevices.indexOf(device.txtRecord.fn) !== -1) {
         this.log('Ignoring: %s [%s]', device.txtRecord.fn, device.txtRecord.id)
         if (accessory !== undefined)  
@@ -73,18 +74,13 @@ ControlChromecastPlatform.prototype.scanAccesories = function () {
         this.log('Adding a new found Chomecast: %s [%s]', device.txtRecord.fn, device.txtRecord.id)
         this.addAccessory(device);
       } else {
-        if (accessory !== undefined && accessory.context) {
-          this.log("Discovered: %s [%s]", device.txtRecord.fn, device.txtRecord.id);
-          if(typeof this.accessories[uuid].updateInfo === "function"){
+        this.log("Discovered: %s [%s]", device.txtRecord.fn, device.txtRecord.id);
+        if(typeof this.accessories[uuid].updateInfo === "function"){
 
-            this.accessories[uuid].updateInfo(device);
-            this.accessories[uuid].clientConnect();
+          this.accessories[uuid].updateInfo(device);
+          this.accessories[uuid].clientConnect();
 
-          } else this.accessories[uuid] = new ChromecastAccessory(this.log, accessory, device);
-        } else {
-          this.log('Adding a new found Chomecast: %s [%s]', device.txtRecord.fn, device.txtRecord.id)
-          this.addAccessory(device);
-        }
+        } else this.accessories[uuid] = new ChromecastAccessory(this.log, accessory, device);
       }
     }
   }.bind(this);
