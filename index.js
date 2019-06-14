@@ -73,7 +73,7 @@ ControlChromecastPlatform.prototype.scanAccesories = function () {
         this.log('Adding a new found Chomecast: %s [%s]', device.txtRecord.fn, device.txtRecord.id)
         this.addAccessory(device);
       } else {
-        if (accessory !== undefined) {
+        if (accessory !== undefined && accessory.context) {
           this.log("Discovered: %s [%s]", device.txtRecord.fn, device.txtRecord.id);
           this.accessories[uuid] = new ChromecastAccessory(this.log, accessory, device);
         } else {
@@ -121,6 +121,7 @@ ControlChromecastPlatform.prototype.addAccessory = function (device) {
 
     let accessory = new PlatformAccessory(device.name, UUIDGen.generate(device.txtRecord.id));
 
+    accessory.context.id = device.txtRecord.id;
     accessory.context.name = device.txtRecord.fn;
     accessory.context.make = "Google";
     accessory.context.model = device.txtRecord.md || "Unknown";
@@ -563,13 +564,6 @@ function ChromecastAccessory(log, accessory, device) {
   if (service.testCharacteristic(Characteristic.Brightness) === false) {
     service.addCharacteristic(Characteristic.Brightness)
   }
-
-  this.accessory.on('identify', function (paired, callback) {
-    this.log('%s - identify', this.accessory.context.name);
-    // this.setWaveform(null, callback);
-    callback()
-  }.bind(this));
-
 
   this.addEventHandlers();
   this.updateReachability(device);
