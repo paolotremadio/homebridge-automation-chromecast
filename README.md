@@ -3,8 +3,7 @@
 
 This accessory will discover all chromecasts on the network and create a lightbulb for each Chromecast or Chromecast Audio device.  
   
-Turning On the the bulb will play the currently casted stream. 
-Turning Off the switch will pause the stream. 
+Turning the bulb On/Off  will play/pause the currently casted stream.
 Setting the brightness will set the volume of the device.
 
 ## Installation
