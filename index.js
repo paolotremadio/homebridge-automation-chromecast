@@ -645,7 +645,7 @@ ChromecastAccessory.prototype.clientDisconnect = function (reconnect) {
 
 ChromecastAccessory.prototype.clientError = function (error) {
   this.log(`Chromecast client - ${error}`);
-  if(error.includes("EHOSTUNREACH")) this.clientDisconnect();
+  if(error && error.contains("EHOSTUNREACH")) this.clientDisconnect();
   else this.clientDisconnect(true);
 }
 
