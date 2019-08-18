@@ -1,7 +1,7 @@
 
 # Controller - Chromecast / Chromecast Audio  
 
-This accessory will discover all chromecasts on the network and create a lightbulb for each Chromecast or Chromecast Audio device.  
+This accessory will discover all chromecasts on the network and create a lightbulb for'Chromecast', 'Chromecast Audio', 'Google Cast Group', 'JBL Link View', 'Lenovo Smart Display', 'Google Nest Hub', 'Lenovo Smart Clock', 'Google Home', 'Google Home Mini'.  
   
 Turning the bulb On/Off  will play/pause the currently casted stream.  
 Setting the brightness will set the volume of the device.
