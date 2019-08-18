@@ -60,7 +60,7 @@ function ControlChromecastPlatform(log, config, api) {
 ControlChromecastPlatform.prototype.scanAccesories = function () {
 
   let addChromecast = function(device){
-    if(device && device.txtRecord && ['Chromecast', 'Chromecast Audio', 'Google Cast Group', 'JBL Link View', 'Lenovo Smart Display', 'Google Nest Hub', 'Lenovo Smart Clock', 'Google Home', 'Google Home Mini'].indexOf(device.txtRecord.md) !== -1){
+    if(device && device.txtRecord && ['Chromecast', 'Chromecast Audio', 'Google Cast Group', 'JBL Link View', 'Lenovo Smart Display', 'Google Nest Hub', 'Lenovo Smart Clock', 'Google Home', 'Google Home Mini', 'Google Nest Hub Max'].indexOf(device.txtRecord.md) !== -1){
       let uuid = UUIDGen.generate(device.txtRecord.id);
       let accessory = this.accessories[uuid];
 
