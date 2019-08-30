@@ -172,6 +172,7 @@ class AutomationChromecast {
 
       this.log('Waiting 2 seconds before reconnecting');
 
+      clearTimeout(this.reconnectTimer);
       this.reconnectTimer = setTimeout(() => {
         this.reconnectCounter = this.reconnectCounter + 1;
         this.clientConnect();
