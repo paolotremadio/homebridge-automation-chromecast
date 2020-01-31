@@ -1,0 +1,30 @@
+{
+    "pluginAlias": "AutomationChromecast",
+    "pluginType": "accessory",
+    "schema": {
+        "type": "object",
+        "properties": {
+            "name": {
+                "title": "Name",
+                "type": "string",
+                "required": true,
+                "default": "Living Room TV",
+                "description": "The name that will appear in your homebridge log."
+            },
+            "chromecastDeviceName": {
+                "title": "Chromecast Device Name",
+                "type": "string",
+                "placeholder": "Living Room",
+                "required": true,
+                "description": "The device Name of your Chromecast."
+            },
+            "switchOffDelay": {
+                "title": "Switch Off Delay",
+                "type": "integer",
+                "placeholder": "0",
+                "required": false,
+                "description": "The number of milliseconds to wait before the motion sensor stops detecting movement after stop casting."
+            }
+        }
+    }
+}
