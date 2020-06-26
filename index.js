@@ -351,8 +351,8 @@ class AutomationChromecast {
     if (this.chromecastClient) {
       try {
         this.chromecastClient.setVolume({ level: volume / 100 }, () => callback());
-      } catch(e) {
-        this.debug(`setVolume() - Reported error`, e);
+      } catch (e) {
+        this.debug('setVolume() - Reported error', e);
         callback();
       }
     }
