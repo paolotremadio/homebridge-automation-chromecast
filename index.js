@@ -4,7 +4,7 @@ const CastDefaultMediaReceiver = require('castv2-client').DefaultMediaReceiver;
 const debug = require('debug');
 
 const pkginfo = require('./package');
-const CustomCharacteristics = require('./custom-characteristics');
+const InitCustomCharacteristics = require('./custom-characteristics');
 
 let Service;
 let Characteristic;
@@ -22,6 +22,8 @@ class AutomationChromecast {
     this.chromecastDeviceName = config.chromecastDeviceName;
     this.switchOffDelay = config.switchOffDelay || 0;
     this.debug = debug(`homebridge-automation-chromecast:${this.chromecastDeviceName}`);
+
+    const CustomCharacteristics = InitCustomCharacteristics(Characteristic);
 
     this.setDefaultProperties(true);
 
