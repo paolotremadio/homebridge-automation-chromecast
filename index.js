@@ -39,7 +39,7 @@ class AutomationChromecast {
 
     this.switchService
       .addCharacteristic(CustomCharacteristics.DeviceIp)
-      .on('get', callback => callback(null, this.deviceIp));
+      .on('get', callback => callback(null, `${this.chromecastIp}:${this.chromecastPort}`));
 
     this.switchService
       .addCharacteristic(CustomCharacteristics.DeviceId)
@@ -66,7 +66,15 @@ class AutomationChromecast {
       .setCharacteristic(Characteristic.FirmwareRevision, pkginfo.version)
       .setCharacteristic(Characteristic.HardwareRevision, pkginfo.version);
 
-    this.detectChromecast();
+    if (config.ip && config.port) {
+      this.chromecastIp = config.ip;
+      this.chromecastPort = config.port;
+
+      this.log(`Found hardcoded IP in config. Connecting to ${this.chromecastIp}:${this.chromecastPort}`);
+      this.clientConnect();
+    } else {
+      this.detectChromecast();
+    }
   }
 
   setDefaultProperties(resetIpAndPort = false, stopReconnecting = false) {
@@ -83,7 +91,6 @@ class AutomationChromecast {
     this.volume = 0;
 
     this.deviceType = null;
-    this.deviceIp = null;
     this.deviceId = null;
 
     this.switchOffDelayTimer = null;
@@ -120,7 +127,6 @@ class AutomationChromecast {
         this.chromecastPort = port;
 
         this.deviceType = txt.md || '';
-        this.deviceIp = `${ipAddress}:${port}`;
         this.deviceId = txt.id;
 
         this.log(`Chromecast found on ${this.chromecastIp}:${this.chromecastPort}`);
