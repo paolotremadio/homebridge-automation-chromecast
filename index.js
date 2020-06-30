@@ -66,15 +66,7 @@ class AutomationChromecast {
       .setCharacteristic(Characteristic.FirmwareRevision, pkginfo.version)
       .setCharacteristic(Characteristic.HardwareRevision, pkginfo.version);
 
-    if (config.ip && config.port) {
-      this.chromecastIp = config.ip;
-      this.chromecastPort = config.port;
-
-      this.log(`Found hardcoded IP in config. Connecting to ${this.chromecastIp}:${this.chromecastPort}`);
-      this.clientConnect();
-    } else {
-      this.detectChromecast();
-    }
+    this.detectChromecast();
   }
 
   setDefaultProperties(resetIpAndPort = false, stopReconnecting = false) {
