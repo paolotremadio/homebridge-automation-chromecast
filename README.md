@@ -1,6 +1,17 @@
 
 # Automation - Chromecast / Chromecast Audio  
-  
+
+## Installation
+
+### Install dependencies
+This command will work on Raspbian. Please Google the right comand for your platform.
+
+```
+sudo apt-get install libavahi-compat-libdnssd-dev
+```
+
+## Config example
+
 Example config.json:  
   
 ```json
